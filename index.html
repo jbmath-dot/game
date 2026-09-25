@@ -1,19 +1,390 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>내 첫 웹페이지</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="수학 수업과 학급 운영에 바로 활용할 수 있는 게임·웹툴 모음" />
+  <title>Math Class Webtools | 수학 게임 & 교실 웹툴</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-2: #eef2ff;
+      --text: #172033;
+      --muted: #697386;
+      --line: #e4e9f2;
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --shadow: 0 14px 35px rgba(31, 41, 55, 0.08);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(79, 70, 229, 0.10), transparent 28rem),
+        radial-gradient(circle at 95% 8%, rgba(14, 165, 233, 0.10), transparent 24rem),
+        var(--bg);
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    .wrap { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    .topbar {
+      position: sticky; top: 0; z-index: 50; backdrop-filter: blur(16px);
+      background: rgba(245, 247, 251, 0.84);
+      border-bottom: 1px solid rgba(228, 233, 242, 0.85);
+    }
+    .nav {
+      min-height: 68px; display: flex; align-items: center;
+      justify-content: space-between; gap: 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 850; letter-spacing: -0.02em; }
+    .brand-mark {
+      width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), #0ea5e9); color: #fff;
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
+    }
+    .nav-links { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+    .nav-links a { padding: 9px 12px; border-radius: 10px; }
+    .nav-links a:hover { background: var(--surface); color: var(--text); }
+    .hero { padding: 72px 0 34px; }
+    .hero-card {
+      position: relative; overflow: hidden; padding: 54px; border-radius: 30px;
+      background: linear-gradient(135deg, #111827 0%, #312e81 58%, #0369a1 100%);
+      color: white; box-shadow: 0 28px 70px rgba(30, 41, 59, 0.18);
+    }
+    .hero-card::after {
+      content: ""; position: absolute; width: 330px; height: 330px; right: -90px; top: -120px;
+      border-radius: 50%; background: rgba(255, 255, 255, 0.08);
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; margin-bottom: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.20); border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08); font-size: 13px; font-weight: 700;
+    }
+    h1 {
+      max-width: 760px; margin: 0; font-size: clamp(34px, 6vw, 64px);
+      line-height: 1.08; letter-spacing: -0.055em;
+    }
+    .hero p {
+      max-width: 720px; margin: 22px 0 0; color: rgba(255, 255, 255, 0.78);
+      font-size: clamp(16px, 2vw, 19px);
+    }
+    .stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+    .stat {
+      padding: 10px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.10);
+      border: 1px solid rgba(255, 255, 255, 0.13); font-size: 14px;
+    }
+    .toolbar { padding: 26px 0 8px; }
+    .search-row {
+      display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center;
+    }
+    .search-box { position: relative; }
+    .search-box span {
+      position: absolute; left: 17px; top: 50%; transform: translateY(-50%);
+      color: var(--muted); pointer-events: none;
+    }
+    #search {
+      width: 100%; height: 52px; padding: 0 18px 0 47px; border: 1px solid var(--line);
+      border-radius: 16px; background: var(--surface); color: var(--text); outline: none;
+      box-shadow: 0 8px 24px rgba(31, 41, 55, 0.04);
+    }
+    #search:focus { border-color: rgba(79, 70, 229, 0.65); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.10); }
+    .count { min-width: 92px; text-align: center; color: var(--muted); font-size: 14px; }
+    .filters {
+      display: flex; gap: 8px; overflow-x: auto; padding: 15px 0 6px; scrollbar-width: none;
+    }
+    .filters::-webkit-scrollbar { display: none; }
+    .filter-btn {
+      flex: 0 0 auto; border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+      color: var(--muted); padding: 9px 14px; cursor: pointer; transition: 0.18s ease;
+    }
+    .filter-btn:hover, .filter-btn.active { color: white; border-color: var(--primary); background: var(--primary); }
+    .section-head {
+      display: flex; justify-content: space-between; align-items: end; gap: 16px; margin: 28px 0 18px;
+    }
+    .section-head h2 { margin: 0; font-size: 26px; letter-spacing: -0.035em; }
+    .section-head p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .card {
+      display: flex; flex-direction: column; min-height: 255px; padding: 24px;
+      border: 1px solid var(--line); border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.88); box-shadow: var(--shadow);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px); border-color: rgba(79, 70, 229, 0.25);
+      box-shadow: 0 22px 45px rgba(31, 41, 55, 0.12);
+    }
+    .card.hidden { display: none; }
+    .icon {
+      width: 48px; height: 48px; display: grid; place-items: center; margin-bottom: 17px;
+      border-radius: 15px; background: var(--surface-2); font-size: 24px;
+    }
+    .card h3 { margin: 0 0 8px; font-size: 20px; letter-spacing: -0.025em; }
+    .card p { margin: 0 0 18px; color: var(--muted); font-size: 14px; flex: 1; }
+    .card-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .badge {
+      display: inline-flex; align-items: center; min-height: 29px; padding: 5px 9px;
+      border-radius: 999px; background: #f1f5f9; color: #475569; font-size: 12px; font-weight: 750;
+    }
+    .run {
+      display: inline-flex; align-items: center; gap: 7px; padding: 9px 12px; border-radius: 11px;
+      background: #111827; color: white; font-size: 13px; font-weight: 750;
+    }
+    .run:hover { background: var(--primary-dark); }
+    .empty {
+      display: none; padding: 50px 20px; border: 1px dashed var(--line); border-radius: var(--radius);
+      color: var(--muted); text-align: center; background: rgba(255,255,255,0.7);
+    }
+    .advanced {
+      margin: 54px 0 0; padding: 30px; border: 1px solid var(--line);
+      border-radius: 24px; background: var(--surface); box-shadow: var(--shadow);
+    }
+    .advanced h2 { margin: 0 0 8px; font-size: 23px; letter-spacing: -0.03em; }
+    .advanced p { margin: 0 0 18px; color: var(--muted); }
+    .advanced-links { display: flex; flex-wrap: wrap; gap: 10px; }
+    .advanced-links a {
+      padding: 10px 13px; border: 1px solid var(--line); border-radius: 12px;
+      background: #f8fafc; font-weight: 700; font-size: 14px;
+    }
+    footer { padding: 44px 0 56px; color: var(--muted); font-size: 13px; text-align: center; }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero-card { padding: 42px 34px; }
+    }
+    @media (max-width: 640px) {
+      .wrap { width: min(100% - 22px, 1180px); }
+      .nav { min-height: 62px; }
+      .nav-links a:first-child { display: none; }
+      .hero { padding-top: 26px; }
+      .hero-card { padding: 34px 24px; border-radius: 24px; }
+      .grid { grid-template-columns: 1fr; }
+      .search-row { grid-template-columns: 1fr; }
+      .count { text-align: left; padding-left: 3px; }
+      .card { min-height: 225px; }
+      .advanced { padding: 24px 20px; }
+    }
+  </style>
 </head>
 <body>
-  <h1>안녕하세요!</h1>
-  <p>GitHub Pages로 만든 첫 미리보기입니다.</p>
+  <header class="topbar">
+    <div class="wrap nav">
+      <a class="brand" href="./" aria-label="홈으로">
+        <span class="brand-mark">M</span>
+        <span>Math Class Webtools</span>
+      </a>
+      <nav class="nav-links" aria-label="주요 메뉴">
+        <a href="#tools">웹툴</a>
+        <a href="#advanced">고급 기능</a>
+        <a href="https://github.com/iceeastmath/game" target="_blank" rel="noopener">GitHub ↗</a>
+      </nav>
+    </div>
+  </header>
 
-  <a href="굉장히공평한돌림판.html">학생과 장난으로 발표시키기 프로그램</a>
-  <a href="자리배치 프로그램.html">학생 자리배치 프로그램</a>
-  <a href="메론게임.html">메론게임</a>
-  <a href="약수 테트리스.html">약수 테트리스</a>
-  <a href="2048.html">2048</a>
-  <a href="궁극의틱택토.html_pvp">궁극의틱택토</a>
-  
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <div class="hero-card">
+          <div class="eyebrow">수업에서 바로 쓰는 웹도구</div>
+          <h1>수학 게임과<br />교실 웹툴을 한곳에.</h1>
+          <p>별도 설치 없이 브라우저에서 바로 실행할 수 있습니다. 수학 활동, 전략 게임, 협동 활동, 자리배치와 출석 관리까지 필요한 도구를 빠르게 찾아보세요.</p>
+          <div class="stats">
+            <span class="stat">17개 실행 도구</span>
+            <span class="stat">모바일 · PC 지원</span>
+            <span class="stat">GitHub Pages 기반</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="toolbar" id="tools">
+      <div class="wrap">
+        <div class="search-row">
+          <label class="search-box">
+            <span>⌕</span>
+            <input id="search" type="search" placeholder="게임 또는 웹툴 검색" autocomplete="off" />
+          </label>
+          <div class="count" id="count" aria-live="polite">17개 도구</div>
+        </div>
+
+        <div class="filters" aria-label="카테고리 필터">
+          <button class="filter-btn active" data-filter="all">전체</button>
+          <button class="filter-btn" data-filter="math">수학</button>
+          <button class="filter-btn" data-filter="strategy">전략</button>
+          <button class="filter-btn" data-filter="puzzle">퍼즐</button>
+          <button class="filter-btn" data-filter="classroom">학급운영</button>
+          <button class="filter-btn" data-filter="group">협동 · 단체</button>
+          <button class="filter-btn" data-filter="pvp">PVP</button>
+        </div>
+
+        <div class="section-head">
+          <div>
+            <h2>웹툴 모음</h2>
+            <p>카드를 눌러 해당 도구를 바로 실행할 수 있습니다.</p>
+          </div>
+        </div>
+
+        <div class="grid" id="toolGrid">
+          <article class="card" data-category="classroom" data-search="굉장히 공평한 돌림판 발표 학생 랜덤">
+            <div class="icon">🎡</div><h3>굉장히 공평한 돌림판</h3>
+            <p>발표자 선정이나 학급 활동에서 가볍게 활용할 수 있는 랜덤 돌림판 도구입니다.</p>
+            <div class="card-bottom"><span class="badge">학급운영</span><a class="run" href="굉장히공평한돌림판.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="classroom" data-search="자리배치 프로그램 좌석 학급">
+            <div class="icon">🪑</div><h3>자리배치 프로그램</h3>
+            <p>학생 좌석을 빠르게 구성하고 학급 자리배치 활동에 활용하는 도구입니다.</p>
+            <div class="card-bottom"><span class="badge">학급운영</span><a class="run" href="자리배치%20프로그램.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="classroom" data-search="출석부 출석 학급 관리">
+            <div class="icon">📋</div><h3>출석부</h3>
+            <p>교실에서 간편하게 학생 출석 상황을 확인하고 관리할 수 있는 웹 출석부입니다.</p>
+            <div class="card-bottom"><span class="badge">학급운영</span><a class="run" href="출석부.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="classroom" data-search="교무실 호출 학생 호출">
+            <div class="icon">📢</div><h3>교무실 호출</h3>
+            <p>교무실이나 교실에서 학생 호출 상황에 활용할 수 있는 간단한 웹도구입니다.</p>
+            <div class="card-bottom"><span class="badge">학급운영</span><a class="run" href="교무실호출.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="math puzzle" data-search="약수 테트리스 수학 약수 게임">
+            <div class="icon">🧮</div><h3>약수 테트리스</h3>
+            <p>약수 개념과 퍼즐 요소를 결합한 수학 학습형 테트리스 게임입니다.</p>
+            <div class="card-bottom"><span class="badge">수학</span><a class="run" href="약수%20테트리스.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="math puzzle" data-search="2048 수학 숫자 퍼즐">
+            <div class="icon">🔢</div><h3>2048</h3>
+            <p>숫자 타일을 합치며 전략적으로 높은 숫자를 만들어가는 대표 숫자 퍼즐입니다.</p>
+            <div class="card-bottom"><span class="badge">수학 · 퍼즐</span><a class="run" href="2048.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="puzzle" data-search="메론 게임 멜론 합치기 퍼즐">
+            <div class="icon">🍈</div><h3>메론게임</h3>
+            <p>같은 요소를 합치며 점수를 높이는 직관적인 합치기형 퍼즐 게임입니다.</p>
+            <div class="card-bottom"><span class="badge">퍼즐</span><a class="run" href="메론게임.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="puzzle math" data-search="물병 채우기 물병 퍼즐 수학">
+            <div class="icon">🧴</div><h3>물병채우기</h3>
+            <p>조건에 맞게 물병을 채우며 사고력을 기르는 퍼즐형 활동입니다.</p>
+            <div class="card-bottom"><span class="badge">퍼즐</span><a class="run" href="물병채우기.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="puzzle strategy" data-search="루빅스 레이스 퍼즐 전략">
+            <div class="icon">🟦</div><h3>루빅스레이스</h3>
+            <p>패턴을 빠르게 맞추며 공간 감각과 전략적 판단을 사용하는 퍼즐 게임입니다.</p>
+            <div class="card-bottom"><span class="badge">퍼즐</span><a class="run" href="루빅스레이스.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="strategy" data-search="궁극의 틱택토 전략">
+            <div class="icon">⭕</div><h3>궁극의 틱택토</h3>
+            <p>여러 개의 틱택토 보드를 연결해 더 깊은 전략을 요구하는 게임입니다.</p>
+            <div class="card-bottom"><span class="badge">전략</span><a class="run" href="궁극의틱택토.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="strategy" data-search="금지 틱택토 전략">
+            <div class="icon">🚫</div><h3>금지틱택토</h3>
+            <p>일반 틱택토와 다른 제약 규칙을 적용해 새로운 판단을 요구하는 전략 게임입니다.</p>
+            <div class="card-bottom"><span class="badge">전략</span><a class="run" href="금지틱택토.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="strategy" data-search="사라지는 틱택토 전략">
+            <div class="icon">💨</div><h3>사라지는틱택토</h3>
+            <p>놓은 말이 계속 유지되지 않는 변형 규칙으로 진행되는 틱택토 게임입니다.</p>
+            <div class="card-bottom"><span class="badge">전략</span><a class="run" href="사라지는틱택토.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="strategy" data-search="쿼리도 보드게임 전략">
+            <div class="icon">♟️</div><h3>쿼리도</h3>
+            <p>상대의 이동을 방해하고 목표 지점에 먼저 도착하는 길찾기 전략 게임입니다.</p>
+            <div class="card-bottom"><span class="badge">전략</span><a class="run" href="쿼리도.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="group puzzle" data-search="협동 미로 단체 협동 퍼즐">
+            <div class="icon">🤝</div><h3>협동미로</h3>
+            <p>여러 학생이 함께 의사소통하며 해결하는 협동형 미로 활동입니다.</p>
+            <div class="card-bottom"><span class="badge">협동</span><a class="run" href="협동미로.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="group" data-search="단체 플립세븐 플립 세븐 카드 게임">
+            <div class="icon">🃏</div><h3>단체 플립세븐</h3>
+            <p>여러 명이 함께 진행하기 좋은 단체형 카드·확률 게임입니다.</p>
+            <div class="card-bottom"><span class="badge">단체게임</span><a class="run" href="단체%20플립세븐.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="pvp strategy" data-search="궁극의 틱택토 pvp 대전">
+            <div class="icon">⚔️</div><h3>궁극의 틱택토 PVP</h3>
+            <p>두 명 이상이 접속해 즐길 수 있도록 구성된 궁극의 틱택토 대전 버전입니다.</p>
+            <div class="card-bottom"><span class="badge">PVP</span><a class="run" href="pvp/궁극의틱택토_pvp.html">실행하기 →</a></div>
+          </article>
+
+          <article class="card" data-category="pvp math" data-search="숫자야구 pvp 숫자 야구 대전 수학">
+            <div class="icon">⚾</div><h3>숫자야구 PVP</h3>
+            <p>상대와 숫자를 추론하며 진행하는 숫자야구의 다인 접속 버전입니다.</p>
+            <div class="card-bottom"><span class="badge">PVP</span><a class="run" href="pvp/숫자야구_pvp.html">실행하기 →</a></div>
+          </article>
+        </div>
+
+        <div class="empty" id="empty">검색 조건에 맞는 도구가 없습니다.</div>
+
+        <section class="advanced" id="advanced">
+          <h2>랭킹 · 로그인 버전</h2>
+          <p>구글 시트 및 Apps Script 설정이 필요한 고급 버전은 저장소의 전용 폴더에서 확인할 수 있습니다. 기본 게임을 먼저 사용한 뒤 필요한 경우 확장하는 것을 권장합니다.</p>
+          <div class="advanced-links">
+            <a href="https://github.com/iceeastmath/game/tree/main/rank" target="_blank" rel="noopener">🏆 rank 폴더 보기</a>
+            <a href="https://github.com/iceeastmath/game/tree/main/login" target="_blank" rel="noopener">🔐 login 폴더 보기</a>
+            <a href="https://github.com/iceeastmath/game/tree/main/pvp" target="_blank" rel="noopener">⚔️ pvp 폴더 보기</a>
+            <a href="https://github.com/iceeastmath/game/blob/main/README.md" target="_blank" rel="noopener">📘 사용법 보기</a>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="wrap">Math Class Webtools · GitHub Pages</div></footer>
+
+  <script>
+    const searchInput = document.getElementById('search');
+    const filterButtons = [...document.querySelectorAll('.filter-btn')];
+    const cards = [...document.querySelectorAll('.card')];
+    const count = document.getElementById('count');
+    const empty = document.getElementById('empty');
+    let activeFilter = 'all';
+
+    function applyFilters() {
+      const keyword = searchInput.value.trim().toLowerCase();
+      let visible = 0;
+      cards.forEach(card => {
+        const categories = card.dataset.category.split(' ');
+        const searchable = (card.dataset.search + ' ' + card.textContent).toLowerCase();
+        const matchesCategory = activeFilter === 'all' || categories.includes(activeFilter);
+        const matchesSearch = !keyword || searchable.includes(keyword);
+        const show = matchesCategory && matchesSearch;
+        card.classList.toggle('hidden', !show);
+        if (show) visible += 1;
+      });
+      count.textContent = visible + '개 도구';
+      empty.style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        activeFilter = button.dataset.filter;
+        applyFilters();
+      });
+    });
+
+    searchInput.addEventListener('input', applyFilters);
+  </script>
 </body>
 </html>
